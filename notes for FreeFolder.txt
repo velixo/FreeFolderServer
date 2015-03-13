@@ -1,0 +1,18 @@
+Server for FreeFolder
+
+file can have three states:
+	passive
+	downloading from client
+	sending to client
+
+server - client communication:
+	client will check with server if a change has been made
+	if the server has a later timestamp for that file than the client, download that file
+
+	client checks it filelist with the servers:
+		server has file that client doesnt
+			download file from server
+		server has recently registered deletion of file
+			dialog: "delete file locally or just stop tracking?"
+		client is tracking file that server doesnt have yet
+			upload file to server
