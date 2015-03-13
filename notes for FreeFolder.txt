@@ -45,3 +45,15 @@ ServerFileTracker {
 Server will hold Map<String id, ServerFileTracker>.
 
 	historyfile will be a compressed file containing a history of filechanges. Basically several versions of the above list.
+
+
+ServerMonitor:
+	acceptIncomingConnections()
+	disableIncomingConnections()
+
+ServerFileManager:
+	checkConnections()
+	update() {
+		//get commands from server
+		//execute commands
+	}
