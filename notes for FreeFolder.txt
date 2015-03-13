@@ -16,3 +16,9 @@ server - client communication:
 			dialog: "delete file locally or just stop tracking?"
 		client is tracking file that server doesnt have yet
 			upload file to server
+
+
+command types that can be sent client -> server
+	check that files are downloaded and are up to date
+	download (specified)
+	upload files
