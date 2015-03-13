@@ -22,3 +22,26 @@ command types that can be sent client -> server
 	check that files are downloaded and are up to date
 	download (specified)
 	upload files
+
+
+
+
+
+Server doesnt hold a list of all files at runtime.
+Server just holds some simple strings and stuffs to represent a file.
+The files themselves aren't loaded to be sent to clients until needed.
+
+	this can be saved some sort of proprietary file. maybe *.sft?
+ServerFileTracker {
+	# id
+	# filepath
+	# timestamp
+	# last author
+	# historyFile (this will be added later)
+
+	File load()
+}
+
+Server will hold Map<String id, ServerFileTracker>.
+
+	historyfile will be a compressed file containing a history of filechanges. Basically several versions of the above list.
