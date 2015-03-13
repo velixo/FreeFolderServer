@@ -50,6 +50,7 @@ Server will hold Map<String id, ServerFileTracker>.
 ServerMonitor:
 	acceptIncomingConnections()
 	disableIncomingConnections()
+	getRecentCommands()
 
 ServerFileManager:
 	checkConnections()
