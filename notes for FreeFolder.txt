@@ -23,14 +23,16 @@ command types that can be sent client -> server
 	download (specified)
 	upload files
 
-
-
-
 Server doesnt hold a list of all files at runtime.
 Server just holds some simple strings and stuffs to represent a file.
 The files themselves aren't loaded to be sent to clients until needed.
 
 	this can be saved some sort of proprietary file. maybe *.sft?
+
+==========================
+ Class structure proposal
+==========================
+
 FileTracker : Serializable
 	# id
 	# filepath : transient
@@ -56,7 +58,6 @@ ServerFileManager : Observer
 	# Map<String id, ServerFileTracker>
 
 	compareFileTrackerList(List<FileTracker>) : List<FileTracker>
-	getServerMonitor() : ServerMonitor
 	update() {
 		//get commands from server
 		//execute commands
@@ -66,7 +67,7 @@ ServerFileManager : Observer
 Command : Serializable
 
 compareFileList(List<FileTracker>) : Command
-	execute(ServerFileManager)
+	execute(ServerFileManager, ServerMonitor)
 
 downloadFile(File) : Command
 	execute(FileTrackerManager)
