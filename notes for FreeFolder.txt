@@ -32,14 +32,15 @@ Server just holds some simple strings and stuffs to represent a file.
 The files themselves aren't loaded to be sent to clients until needed.
 
 	this can be saved some sort of proprietary file. maybe *.sft?
-ServerFileTracker {
+FileTracker {
 	# id
-	# filepath
+	# filepath : transient
 	# timestamp
 	# last author
-	# historyFile (this will be added later)
+	# historyFile : transient (this will be added later)
 
 	File load()
+	compare()	// EQUAL, OLDER, NEWER, DIFFERENT_FILE
 }
 
 Server will hold Map<String id, ServerFileTracker>.
@@ -47,14 +48,23 @@ Server will hold Map<String id, ServerFileTracker>.
 	historyfile will be a compressed file containing a history of filechanges. Basically several versions of the above list.
 
 
-ServerMonitor:
+ServerMonitor : Observable
 	acceptIncomingConnections()
 	disableIncomingConnections()
 	getRecentCommands()
+	listenForMessages()
+	stopListeningForMessages()
 
-ServerFileManager:
-	checkConnections()
+
+ServerFileManager : Observer
+	# Map<String id, ServerFileTracker>
+
+	compareFileTrackerList(List<FileTracker>) : List<FileTracker>
+
 	update() {
 		//get commands from server
 		//execute commands
 	}
+
+compareFileList(List<FileTracker>) : Command
+	execute(ServerFileManager)
