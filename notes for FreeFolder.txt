@@ -26,13 +26,12 @@ command types that can be sent client -> server
 
 
 
-
 Server doesnt hold a list of all files at runtime.
 Server just holds some simple strings and stuffs to represent a file.
 The files themselves aren't loaded to be sent to clients until needed.
 
 	this can be saved some sort of proprietary file. maybe *.sft?
-FileTracker {
+FileTracker : Serializable
 	# id
 	# filepath : transient
 	# timestamp
@@ -41,17 +40,14 @@ FileTracker {
 
 	File load()
 	compare()	// EQUAL, OLDER, NEWER, DIFFERENT_FILE
-}
 
-Server will hold Map<String id, ServerFileTracker>.
-
-	historyfile will be a compressed file containing a history of filechanges. Basically several versions of the above list.
 
 
 ServerMonitor : Observable
 	acceptIncomingConnections()
 	disableIncomingConnections()
-	getRecentCommands()
+	getRecentCommands() : List<Command>
+	send(Command)
 	listenForMessages()
 	stopListeningForMessages()
 
@@ -60,11 +56,17 @@ ServerFileManager : Observer
 	# Map<String id, ServerFileTracker>
 
 	compareFileTrackerList(List<FileTracker>) : List<FileTracker>
-
+	getServerMonitor() : ServerMonitor
 	update() {
 		//get commands from server
 		//execute commands
 	}
 
+
+Command : Serializable
+
 compareFileList(List<FileTracker>) : Command
 	execute(ServerFileManager)
+
+downloadFile(File) : Command
+	execute(FileTrackerManager)
