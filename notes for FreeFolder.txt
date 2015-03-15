@@ -85,7 +85,6 @@ DownloadRequest : Command
 
 	execute(FileTrackerManager)
 		//change status of local FileTracker
-
 		//build SendFile
 		//send SendFile to server
 
