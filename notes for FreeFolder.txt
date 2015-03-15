@@ -95,11 +95,13 @@ SendFile : Command
 
 	execute(ServerFileManager, ServerMonitor)
 		//load file with FileTracker.load()
-		//send to client 
+		//build a FileRecieved
+		//send FileRecieved to client 
 
 	execute(FileTrackerManager)
 		//load file with FileTracker.load()
-		//send to server
+		//build a FileRecieved
+		//send FileRecieved to client 		
 
 
 FileRecieved : Command
