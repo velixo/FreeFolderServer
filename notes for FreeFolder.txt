@@ -33,17 +33,6 @@ The files themselves aren't loaded to be sent to clients until needed.
  Class structure proposal
 ==========================
 
-FileTracker : Serializable
-	# id
-	# filepath : transient
-	# timestamp
-	# last author
-	# historyFile : transient (this will be added later)
-
-	File load()
-	compare()	// EQUAL, OLDER, NEWER, DIFFERENT_FILE
-
-
 
 ServerMonitor : Observable
 	acceptIncomingConnections()
@@ -58,16 +47,67 @@ ServerFileManager : Observer
 	# Map<String id, ServerFileTracker>
 
 	compareFileTrackerList(List<FileTracker>) : List<FileTracker>
-	update() {
+	update()
 		//get commands from server
 		//execute commands
-	}
+
+
+FileTracker : Serializable
+	# id
+	# filepath : transient
+	# timestamp
+	# last author
+	# historyFile : transient (this will be added later)
+
+	File load()
+	overwrite(File)
+	compare()	// EQUAL, OLDER, NEWER, DIFFERENT_FILE
 
 
 Command : Serializable
 
-compareFileList(List<FileTracker>) : Command
-	execute(ServerFileManager, ServerMonitor)
+CompareFileList : Command
+	# List<FileTracker>
 
-downloadFile(File) : Command
+	execute(ServerFileManager, ServerMonitor)
+		//get list of FileTrackers
+		//if user is missing files, inform client
+		//if server is missing some of these files, send List<DownloadRequest> to client
+		//if user has old version of file, send List<DownloadRequest> to client
+
+DownloadRequest : Command
+	# FileTracker
+	# IP
+
+	execute(ServerFileManager, ServerMonitor)
+		//build SendFile
+		//send SendFile to client
+
 	execute(FileTrackerManager)
+		//change status of local FileTracker
+
+		//build SendFile
+		//send SendFile to server
+
+
+SendFile : Command 
+	# FileTracker
+	# IP
+
+	execute(ServerFileManager, ServerMonitor)
+		//load file with FileTracker.load()
+		//send to client 
+
+	execute(FileTrackerManager)
+		//load file with FileTracker.load()
+		//send to server
+
+
+FileRecieved : Command
+	# File
+	# FileTracker (or just the id)
+
+	execute(FileTrackerManager)
+		//get the local FileTracker for the file
+		//overwrite the file
+		//change status of FileTracker
