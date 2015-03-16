@@ -1,7 +1,7 @@
 Server for FreeFolder
 
 file can have three states:
-	passive
+	UP_TO_DATE
 	downloading from client
 	sending to client
 
@@ -57,7 +57,7 @@ FileTracker : Serializable
 	# filepath : transient
 	# timestamp
 	# last author
-	# status 	// PASSIVE, UPDATING, PENDING_UPDATE, UPLOADING, RECENTLY_UPLOADED 
+	# status 	// UP_TO_DATE, UPDATING, PENDING_UPDATE, UPLOADING, RECENTLY_UPLOADED 
 	# historyFile : transient (this will be added later)
 
 	getId() : String
@@ -80,10 +80,10 @@ CompareFileList : Command
 		//check every local FileTracker against the map
 			//if user has old version of file, build and add to List<DownloadRequest>
 			//if user is missing files, build and add to List<DownloadRequest>
-			//if user has newer of file 
+			//if user has newer of file,
 		 to client
 
-FileStatus
+FileStatusReport
 	# Map<id, status>
 	# IP
 
@@ -91,47 +91,43 @@ FileStatus
 
 	execute(FileTrackerManager)
 		//set status of files
+		//if status == NEEDS_UPDATE
+			//set file status to PENDING_UPDATE
+			//build and send RequestOverwriteFile
+		//if status == NOT_ON_SERVER
+			//set file status to UPLOADING
+			//build and send OverwriteFile
 
-DownloadRequest
-	# FileTracker
-
-	execute(FileTrackerManager)
-		//set FileTracker status to PENDING_UPDATE
-		//build RequestOverwriteFile
-		//send RequestOverwriteFile to server
 
 
 RequestOverwriteFile : Command
-	# FileTracker
+	# id
 	# IP
 
-	execute(ServerFileManager, ServerMonitor)
-		//build OverwriteFile
-		//send OverwriteFile to client
-
 	execute(FileTrackerManager)
-		//if
 		//set FileTracker status to UPLOADING
 		//build OverwriteFile
 		//send OverwriteFile to server
 
 
 OverwriteFile : Command
-	# id
+	# FileTracker
 	# File
 	# IP
 
 	/** This is executed when a file has uploaded to the server */
 	execute(ServerFileTrackerManager, ServerMonitor)
-		//get the local FileTracker with id
-		//overwrite the file
+		//if local FileTracker exists
+			//overwrite the file
+		//else
+			//add FileTracker
 		//build FileRecievedAcknowledgment
 		//send FileRecievedAcknowledgment to IP
 
 	execute(FileTrackerManager)
 		//get the local FileTracker with id
 		//overwrite the file
-		//change status of FileTracker to PASSIVE
+		//change status of FileTracker to UP_TO_DATE
 
 
 FileRecievedAcknowledgment : Command
@@ -142,6 +138,59 @@ FileRecievedAcknowledgment : Command
 	execute(FileManager)
 		//change status of FileTracker to RECENTLY_UPLOADED
 
+
+===========================================================
+===========================================================
+
+
+> Diagram: local file on client that is up to date
+
+---Client---				---Server---
+
+> from autoupdateThread
+CompareFileList -->		
+							Execute:
+						<--	FileStatusReport
+Execute:
+> file status: UP_TO_DATE
+
+===========================================================
+
+> Diagram: local file on client that needs update
+
+---Client---				---Server---
+
+> from autoupdateThread
+CompareFileList -->		
+							Execute:
+						<--	FileStatusReport
+Execute:
+> file needs update
+RequestOverwriteFile -->
+							Execute:
+						<--	OverWriteFile
+Execute:
+> file is overwritten.
+> file status: UP_TO_DATE
+
+===========================================================
+
+> Diagram: local file on client that needs to be uploaded
+
+---Client---				---Server---
+
+> from autoupdateThread
+CompareFileList -->		
+							Execute:
+						<--	FileStatusReport
+Execute:
+> file is being uploaded.
+OverWriteFile -->
+							Execute:
+						<--	FileRecievedAcknowledgment
+Execute:
+> file is uploaded.
+> file status: UP_TO_DATE
 
 
 ===========================================================
@@ -161,3 +210,14 @@ SendFileRequest : Command
 		//load file with FileTracker.load()
 		//build a OverwriteFile
 		//send OverwriteFile to client 		
+
+
+
+
+DownloadRequest
+	# FileTracker
+
+	execute(FileTrackerManager)
+		//set FileTracker status to PENDING_UPDATE
+		//build RequestOverwriteFile
+		//send RequestOverwriteFile to server
