@@ -57,58 +57,107 @@ FileTracker : Serializable
 	# filepath : transient
 	# timestamp
 	# last author
+	# status 	// PASSIVE, UPDATING, PENDING_UPDATE, UPLOADING, RECENTLY_UPLOADED 
 	# historyFile : transient (this will be added later)
 
-	File load()
+	getId() : String
+	getStatus() : int
+	setStatus(int)
+
+	loadFile() : File
 	overwrite(File)
-	compare()	// EQUAL, OLDER, NEWER, DIFFERENT_FILE
+	compare() : int		// EQUAL, OLDER, NEWER, DIFFERENT_FILE
 
 
 Command : Serializable
 
 CompareFileList : Command
-	# List<FileTracker>
+	# Map<id, FileTracker>
 
 	execute(ServerFileManager, ServerMonitor)
+		//create List<DownloadRequest>
 		//get list of FileTrackers
-		//if user is missing files, inform client
-		//if server is missing some of these files, send List<DownloadRequest> to client
-		//if user has old version of file, send List<DownloadRequest> to client
+		//check every local FileTracker against the map
+			//if user has old version of file, build and add to List<DownloadRequest>
+			//if user is missing files, build and add to List<DownloadRequest>
+			//if user has newer of file 
+		 to client
 
-DownloadRequest : Command
+FileStatus
+	# Map<id, status>
+	# IP
+
+	built-by-server
+
+	execute(FileTrackerManager)
+		//set status of files
+
+DownloadRequest
+	# FileTracker
+
+	execute(FileTrackerManager)
+		//set FileTracker status to PENDING_UPDATE
+		//build RequestOverwriteFile
+		//send RequestOverwriteFile to server
+
+
+RequestOverwriteFile : Command
 	# FileTracker
 	# IP
 
 	execute(ServerFileManager, ServerMonitor)
-		//build SendFile
-		//send SendFile to client
+		//build OverwriteFile
+		//send OverwriteFile to client
 
 	execute(FileTrackerManager)
-		//change status of local FileTracker
-		//build SendFile
-		//send SendFile to server
+		//if
+		//set FileTracker status to UPLOADING
+		//build OverwriteFile
+		//send OverwriteFile to server
 
 
-SendFile : Command 
-	# FileTracker
-	# IP
-
-	execute(ServerFileManager, ServerMonitor)
-		//load file with FileTracker.load()
-		//build a FileRecieved
-		//send FileRecieved to client 
-
-	execute(FileTrackerManager)
-		//load file with FileTracker.load()
-		//build a FileRecieved
-		//send FileRecieved to client 		
-
-
-FileRecieved : Command
+OverwriteFile : Command
+	# id
 	# File
-	# FileTracker (or just the id)
+	# IP
+
+	/** This is executed when a file has uploaded to the server */
+	execute(ServerFileTrackerManager, ServerMonitor)
+		//get the local FileTracker with id
+		//overwrite the file
+		//build FileRecievedAcknowledgment
+		//send FileRecievedAcknowledgment to IP
 
 	execute(FileTrackerManager)
-		//get the local FileTracker for the file
+		//get the local FileTracker with id
 		//overwrite the file
-		//change status of FileTracker
+		//change status of FileTracker to PASSIVE
+
+
+FileRecievedAcknowledgment : Command
+	# id
+
+	built-by-server
+
+	execute(FileManager)
+		//change status of FileTracker to RECENTLY_UPLOADED
+
+
+
+===========================================================
+===========================================================
+
+SendFileRequest : Command 
+	# FileTracker
+	# IP : String
+
+	execute(ServerFileManager, ServerMonitor)
+		//load file with FileTracker.load()
+		//build a OverwriteFile
+		//send OverwriteFile to client 
+
+	execute(FileTrackerManager)
+		//set FileTracker status to UPLOADING
+		//load file with FileTracker.load()
+		//build a OverwriteFile
+		//send OverwriteFile to client 		
